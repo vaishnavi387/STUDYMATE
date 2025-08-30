@@ -1,0 +1,55 @@
+import os
+from ibm_watsonx_ai.foundation_models.utils.enums import ModelTypes
+from ibm_watsonx_ai.foundation_models import ModelInference
+from ibm_watsonx_ai.metanames import GenTextParamsMetaNames as GenParams
+from ibm_watsonx_ai import Credentials
+
+# 1. Provide your IBM Cloud credentials
+try:
+    api_key = os.environ["WATSONX_API_KEY"]
+except KeyError:
+    # If not set as an environment variable, you can hardcode or get it via user input
+    # Be cautious with hardcoding keys in production code.
+    api_key = "YOUR_IBM_WATSONX_API_KEY"
+
+# 2. Provide your project ID
+try:
+    project_id = os.environ["WATSONX_PROJECT_ID"]
+except KeyError:
+    project_id = "YOUR_IBM_WATSONX_PROJECT_ID"
+
+
+# 3. Set up the credentials
+credentials = Credentials(
+    url="https://us-south.ml.cloud.ibm.com",
+    api_key=api_key
+)
+
+# 4. Define the model and parameters
+model_id = ModelTypes.MIXTRAL_8X7B_INSTRUCT_V01
+parameters = {
+    GenParams.DECODING_METHOD: "greedy",
+    GenParams.MAX_NEW_TOKENS: 200,
+    GenParams.REPETITION_PENALTY: 1
+}
+
+# 5. Initialize the ModelInference object
+model = ModelInference(
+    model_id=model_id,
+    params=parameters,
+    credentials=credentials,
+    project_id=project_id
+)
+
+# 6. Define the input prompt. This example uses a conversational format.
+# The instruction format for this model is important for optimal results.
+instruction = "What is the capital of France?"
+prompt = f"<s>[INST] {instruction} [/INST]"
+
+# 7. Generate text
+try:
+    generated_text = model.generate_text(prompt=prompt)
+    print(generated_text)
+except Exception as e:
+    print(f"An error occurred: {e}")
+    
